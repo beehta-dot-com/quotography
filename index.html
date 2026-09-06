@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotography - Quote Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&family=Special+Elite&family=VT323&family=Cutive+Mono&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;700&family=Montserrat:wght@400;700&family=Great+Vibes&family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 1300px;
+            width: 100%;
+        }
+        .controls {
+            flex: 1;
+            min-width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding-right: 15px;
+        }
+        .preview {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 300px;
+        }
+        .control-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+        .control-header h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #333;
+        }
+        .section-reset-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 0;
+        }
+        .section-reset-btn:hover {
+            background-color: #c82333;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 3px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+        .val-display {
+            color: #007bff;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], select, textarea, input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+            height: 80px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            justify-content: flex-start;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 5px;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        canvas {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: #eee;
+            background-image: linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            cursor: pointer; /* Indicates it is clickable */
+        }
+        .flex-row {
+            display: flex;
+            gap: 10px;
+        }
+        .flex-row > div {
+            flex: 1;
+        }
+        .preview-header {
+            display: flex; 
+            justify-content: space-between; 
+            width: 100%; 
+            align-items: center; 
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Quote Image Generator</h1>
+
+    <div class="container">
+        <div class="controls">
+            
+            <button id="resetAllBtn" class="btn-secondary">Reset Settings (Keep Content)</button>
+
+            <div class="control-group">
+                <div class="control-header">
+                    <h3>1. Canvas & Background</h3>
+                    <button class="section-reset-btn" id="resetSec1">Reset</button>
+                </div>
+                <div class="flex-row">
+                    <div>
+                        <label for="canvasWidth">Canvas Width (px):</label>
+                        <input type="number" id="canvasWidth" value="1080">
+                    </div>
+                    <div>
+                        <label for="canvasHeight">Canvas Height (px):</label>
+                        <input type="number" id="canvasHeight" value="1080">
+                    </div>
+                </div>
+                
+                <input type="file" id="bgUpload" accept="image/*">
+                
+                <label for="bgZoom">Background Zoom: <span id="bgZoomVal" class="val-display">100</span>%</label>
+                <input type="range" id="bgZoom" value="100" min="10" max="500">
+                
+                <div class="flex-row">
+                    <div>
+                        <label for="bgX">Position X: <span id="bgXVal" class="val-display">50</span>%</label>
+                        <input type="range" id="bgX" value="50" min="0" max="100">
+                    </div>
+                    <div>
+                        <label for="bgY">Position Y: <span id="bgYVal" class="val-display">50</span>%</label>
+                        <input type="range" id="bgY" value="50" min="0" max="100">
+                    </div>
+                </div>
+                <div style="font-size: 12px; color: #666; font-style: italic;">Use sliders to pan, zoom, and crop the image within the canvas.</div>
+            </div>
+
+            <div class="control-group">
+                <div class="control-header">
+                    <h3>2. Main Quote</h3>
+                    <button class="section-reset-btn" id="resetSec2">Reset</button>
+                </div>
+                <textarea id="quoteText" placeholder="Type your quote here...">I am tomorrow's stupid.</textarea>
+                
+                <label for="fontFamily">Font Style:</label>
+                <select id="fontFamily">
+                    <optgroup label="Typewriter Fonts">
+                        <option value="'Courier Prime', monospace">Courier Prime</option>
+                        <option value="'Special Elite', cursive">Special Elite</option>
+                        <option value="'Cutive Mono', monospace">Cutive Mono</option>
+                        <option value="'VT323', monospace">VT323</option>
+                        <option value="'Courier New', Courier, monospace">Courier New</option>
+                    </optgroup>
+                    <optgroup label="Serif (Elegant)">
+                        <option value="'Playfair Display', serif">Playfair Display</option>
+                        <option value="Georgia, serif">Georgia</option>
+                        <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                    </optgroup>
+                    <optgroup label="Sans-Serif (Modern)">
+                        <option value="'Montserrat', sans-serif">Montserrat</option>
+                        <option value="'Roboto', sans-serif">Roboto</option>
+                        <option value="Arial, sans-serif">Arial</option>
+                    </optgroup>
+                </select>
+
+                <div class="flex-row">
+                    <div>
+                        <label for="fontSize">Font Size: <span id="fontSizeVal" class="val-display">60</span>px</label>
+                        <input type="range" id="fontSize" value="60" min="10" max="300">
+                    </div>
+                    <div>
+                        <label for="fontColor">Text Color:</label>
+                        <input type="color" id="fontColor" value="#000000" style="height: 35px; padding: 0;">
+                    </div>
+                </div>
+
+                <label for="yOffset">Vertical Position (Y): <span id="yOffsetVal" class="val-display">50</span>%</label>
+                <input type="range" id="yOffset" value="50" min="0" max="100">
+            </div>
+
+            <div class="control-group">
+                <div class="control-header">
+                    <h3>3. Signature / Author</h3>
+                    <button class="section-reset-btn" id="resetSec3">Reset</button>
+                </div>
+                <input type="text" id="sigText" placeholder="e.g. - shankipillai" value="- shankipillai">
+                
+                <label for="sigFontFamily">Signature Font:</label>
+                <select id="sigFontFamily">
+                    <optgroup label="Handwriting/Script">
+                        <option value="'Great Vibes', cursive">Great Vibes</option>
+                        <option value="'Pacifico', cursive">Pacifico</option>
+                    </optgroup>
+                    <optgroup label="Typewriter & Standard">
+                        <option value="'Courier Prime', monospace">Courier Prime</option>
+                        <option value="'Montserrat', sans-serif">Montserrat</option>
+                        <option value="'Playfair Display', serif">Playfair Display</option>
+                        <option value="Arial, sans-serif">Arial</option>
+                    </optgroup>
+                </select>
+
+                <div class="flex-row">
+                    <div>
+                        <label for="sigFontSize">Size: <span id="sigFontSizeVal" class="val-display">40</span>px</label>
+                        <input type="range" id="sigFontSize" value="40" min="10" max="150">
+                    </div>
+                    <div>
+                        <label for="sigColor">Color:</label>
+                        <input type="color" id="sigColor" value="#000000" style="height: 35px; padding: 0;">
+                    </div>
+                </div>
+
+                <div class="flex-row">
+                    <div>
+                        <label for="sigXOffset">Horizontal (X): <span id="sigXOffsetVal" class="val-display">50</span>%</label>
+                        <input type="range" id="sigXOffset" value="50" min="0" max="100">
+                    </div>
+                    <div>
+                        <label for="sigYOffset">Vertical (Y): <span id="sigYOffsetVal" class="val-display">75</span>%</label>
+                        <input type="range" id="sigYOffset" value="75" min="0" max="100">
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="control-header">
+                    <h3>4. Logo Overlay</h3>
+                    <button class="section-reset-btn" id="resetSec4">Reset</button>
+                </div>
+                <input type="file" id="logoUpload" accept="image/*">
+                
+                <label for="logoSize">Logo Scale: <span id="logoSizeVal" class="val-display">15</span>%</label>
+                <input type="range" id="logoSize" value="15" min="1" max="100">
+
+                <div class="flex-row">
+                    <div>
+                        <label for="logoXOffset">Horizontal (X): <span id="logoXOffsetVal" class="val-display">90</span>%</label>
+                        <input type="range" id="logoXOffset" value="90" min="0" max="100">
+                    </div>
+                    <div>
+                        <label for="logoYOffset">Vertical (Y): <span id="logoYOffsetVal" class="val-display">90</span>%</label>
+                        <input type="range" id="logoYOffset" value="90" min="0" max="100">
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="control-header">
+                    <h3>5. Alignment & Spacing</h3>
+                    <button class="section-reset-btn" id="resetSec5">Reset</button>
+                </div>
+                <label for="sideMargin">Quote Side Margins: <span id="sideMarginVal" class="val-display">15</span>%</label>
+                <input type="range" id="sideMargin" value="15" min="0" max="45">
+
+                <label for="lineHeight">Line Spacing: <span id="lineHeightVal" class="val-display">1.5</span></label>
+                <input type="range" id="lineHeight" value="1.5" step="0.1" min="1" max="3">
+            </div>
+        </div>
+
+        <div class="preview">
+            <div class="preview-header">
+                <label style="font-size: 20px; margin: 0;">Live Preview</label>
+                <div class="checkbox-group" style="padding: 5px; margin: 0;">
+                    <input type="checkbox" id="showGrid" checked>
+                    <label for="showGrid">Show Grid (Click image to toggle)</label>
+                </div>
+            </div>
+            <canvas id="canvas" title="Click to toggle alignment grid"></canvas>
+            <button id="downloadBtn" class="btn-primary">Download Image</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const canvasWidthInput = document.getElementById('canvasWidth');
+        const canvasHeightInput = document.getElementById('canvasHeight');
+        const bgUpload = document.getElementById('bgUpload');
+        const bgZoom = document.getElementById('bgZoom'); const bgZoomVal = document.getElementById('bgZoomVal');
+        const bgX = document.getElementById('bgX'); const bgXVal = document.getElementById('bgXVal');
+        const bgY = document.getElementById('bgY'); const bgYVal = document.getElementById('bgYVal');
+
+        const quoteText = document.getElementById('quoteText');
+        const fontFamily = document.getElementById('fontFamily');
+        const fontSize = document.getElementById('fontSize'); const fontSizeVal = document.getElementById('fontSizeVal');
+        const fontColor = document.getElementById('fontColor');
+        const yOffset = document.getElementById('yOffset'); const yOffsetVal = document.getElementById('yOffsetVal');
+        
+        const sigText = document.getElementById('sigText');
+        const sigFontFamily = document.getElementById('sigFontFamily');
+        const sigFontSize = document.getElementById('sigFontSize'); const sigFontSizeVal = document.getElementById('sigFontSizeVal');
+        const sigColor = document.getElementById('sigColor');
+        const sigXOffset = document.getElementById('sigXOffset'); const sigXOffsetVal = document.getElementById('sigXOffsetVal');
+        const sigYOffset = document.getElementById('sigYOffset'); const sigYOffsetVal = document.getElementById('sigYOffsetVal');
+
+        const logoUpload = document.getElementById('logoUpload');
+        const logoSize = document.getElementById('logoSize'); const logoSizeVal = document.getElementById('logoSizeVal');
+        const logoXOffset = document.getElementById('logoXOffset'); const logoXOffsetVal = document.getElementById('logoXOffsetVal');
+        const logoYOffset = document.getElementById('logoYOffset'); const logoYOffsetVal = document.getElementById('logoYOffsetVal');
+
+        const sideMargin = document.getElementById('sideMargin'); const sideMarginVal = document.getElementById('sideMarginVal');
+        const lineHeightInput = document.getElementById('lineHeight'); const lineHeightVal = document.getElementById('lineHeightVal');
+        
+        const showGrid = document.getElementById('showGrid');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        let bgImage = new Image();
+        let logoImage = new Image();
+
+        // --------------------------------------------------------
+        // CORE FUNCTIONS
+        // --------------------------------------------------------
+        
+        function initCanvasSize() {
+            canvas.width = parseInt(canvasWidthInput.value) || 1080;
+            canvas.height = parseInt(canvasHeightInput.value) || 1080;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        initCanvasSize();
+        document.fonts.ready.then(() => drawCanvas());
+
+        function calculateAutoZoom() {
+            if (!bgImage.src) return;
+            const canvasRatio = canvas.width / canvas.height;
+            const imgRatio = bgImage.width / bgImage.height;
+            let defaultZoom = 100;
+            if (canvasRatio > imgRatio) {
+                defaultZoom = (canvas.width / bgImage.width) * 100;
+            } else {
+                defaultZoom = (canvas.height / bgImage.height) * 100;
+            }
+            bgZoom.value = Math.ceil(defaultZoom);
+            bgZoomVal.textContent = bgZoom.value;
+        }
+
+        // Toggle Grid on Canvas Click
+        canvas.addEventListener('click', () => {
+            showGrid.checked = !showGrid.checked;
+            drawCanvas();
+        });
+
+        // Track inputs for live redraws
+        const inputs = [
+            canvasWidthInput, canvasHeightInput, bgZoom, bgX, bgY,
+            quoteText, fontFamily, fontSize, fontColor, yOffset,
+            sigText, sigFontFamily, sigFontSize, sigColor, sigXOffset, sigYOffset,
+            logoSize, logoXOffset, logoYOffset,
+            sideMargin, lineHeightInput, showGrid
+        ];
+
+        inputs.forEach(el => {
+            el.addEventListener('input', (e) => {
+                if(e.target === bgZoom) bgZoomVal.textContent = e.target.value;
+                if(e.target === bgX) bgXVal.textContent = e.target.value;
+                if(e.target === bgY) bgYVal.textContent = e.target.value;
+                if(e.target === fontSize) fontSizeVal.textContent = e.target.value;
+                if(e.target === sigFontSize) sigFontSizeVal.textContent = e.target.value;
+                if(e.target === yOffset) yOffsetVal.textContent = e.target.value;
+                if(e.target === sigXOffset) sigXOffsetVal.textContent = e.target.value;
+                if(e.target === sigYOffset) sigYOffsetVal.textContent = e.target.value;
+                if(e.target === logoSize) logoSizeVal.textContent = e.target.value;
+                if(e.target === logoXOffset) logoXOffsetVal.textContent = e.target.value;
+                if(e.target === logoYOffset) logoYOffsetVal.textContent = e.target.value;
+                if(e.target === sideMargin) sideMarginVal.textContent = e.target.value;
+                if(e.target === lineHeightInput) lineHeightVal.textContent = e.target.value;
+                drawCanvas();
+            });
+        });
+
+        // --------------------------------------------------------
+        // RESET FUNCTIONS
+        // --------------------------------------------------------
+        
+        // Reset All Settings (Preserves Content)
+        document.getElementById('resetAllBtn').addEventListener('click', () => {
+            canvasWidthInput.value = 1080; canvasHeightInput.value = 1080;
+            bgX.value = 50; bgXVal.textContent = 50;
+            bgY.value = 50; bgYVal.textContent = 50;
+            if(bgImage.src) calculateAutoZoom(); 
+            else { bgZoom.value = 100; bgZoomVal.textContent = 100; }
+
+            fontFamily.value = "'Courier Prime', monospace";
+            fontSize.value = 60; fontSizeVal.textContent = 60;
+            fontColor.value = "#000000";
+            yOffset.value = 50; yOffsetVal.textContent = 50;
+
+            sigFontFamily.value = "'Great Vibes', cursive";
+            sigFontSize.value = 40; sigFontSizeVal.textContent = 40;
+            sigColor.value = "#000000";
+            sigXOffset.value = 50; sigXOffsetVal.textContent = 50;
+            sigYOffset.value = 75; sigYOffsetVal.textContent = 75;
+
+            logoSize.value = 15; logoSizeVal.textContent = 15;
+            logoXOffset.value = 90; logoXOffsetVal.textContent = 90;
+            logoYOffset.value = 90; logoYOffsetVal.textContent = 90;
+
+            sideMargin.value = 15; sideMarginVal.textContent = 15;
+            lineHeightInput.value = 1.5; lineHeightVal.textContent = 1.5;
+            drawCanvas();
+        });
+
+        // Reset Section 1 (Canvas & BG)
+        document.getElementById('resetSec1').addEventListener('click', () => {
+            canvasWidthInput.value = 1080; canvasHeightInput.value = 1080;
+            bgUpload.value = ''; bgImage.src = ''; 
+            bgZoom.value = 100; bgZoomVal.textContent = 100;
+            bgX.value = 50; bgXVal.textContent = 50;
+            bgY.value = 50; bgYVal.textContent = 50;
+            drawCanvas();
+        });
+
+        // Reset Section 2 (Quote)
+        document.getElementById('resetSec2').addEventListener('click', () => {
+            quoteText.value = "I am tomorrow's stupid.";
+            fontFamily.value = "'Courier Prime', monospace";
+            fontSize.value = 60; fontSizeVal.textContent = 60;
+            fontColor.value = "#000000";
+            yOffset.value = 50; yOffsetVal.textContent = 50;
+            drawCanvas();
+        });
+
+        // Reset Section 3 (Signature)
+        document.getElementById('resetSec3').addEventListener('click', () => {
+            sigText.value = "- shankipillai";
+            sigFontFamily.value = "'Great Vibes', cursive";
+            sigFontSize.value = 40; sigFontSizeVal.textContent = 40;
+            sigColor.value = "#000000";
+            sigXOffset.value = 50; sigXOffsetVal.textContent = 50;
+            sigYOffset.value = 75; sigYOffsetVal.textContent = 75;
+            drawCanvas();
+        });
+
+        // Reset Section 4 (Logo)
+        document.getElementById('resetSec4').addEventListener('click', () => {
+            logoUpload.value = ''; logoImage.src = '';
+            logoSize.value = 15; logoSizeVal.textContent = 15;
+            logoXOffset.value = 90; logoXOffsetVal.textContent = 90;
+            logoYOffset.value = 90; logoYOffsetVal.textContent = 90;
+            drawCanvas();
+        });
+
+        // Reset Section 5 (Alignment)
+        document.getElementById('resetSec5').addEventListener('click', () => {
+            sideMargin.value = 15; sideMarginVal.textContent = 15;
+            lineHeightInput.value = 1.5; lineHeightVal.textContent = 1.5;
+            drawCanvas();
+        });
+
+        // --------------------------------------------------------
+        // IMAGE UPLOADS
+        // --------------------------------------------------------
+
+        bgUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                bgImage.onload = () => {
+                    calculateAutoZoom();
+                    bgX.value = 50; bgXVal.textContent = 50;
+                    bgY.value = 50; bgYVal.textContent = 50;
+                    drawCanvas();
+                };
+                bgImage.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+
+        logoUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                logoImage.onload = () => drawCanvas();
+                logoImage.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+
+        // --------------------------------------------------------
+        // CANVAS DRAWING LOGIC
+        // --------------------------------------------------------
+
+        function drawCanvas(isDownloading = false) {
+            canvas.width = parseInt(canvasWidthInput.value) || 1080;
+            canvas.height = parseInt(canvasHeightInput.value) || 1080;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Draw Background
+            if (bgImage.src && bgImage.width > 0) {
+                const zoomFactor = parseInt(bgZoom.value) / 100;
+                const scaledWidth = bgImage.width * zoomFactor;
+                const scaledHeight = bgImage.height * zoomFactor;
+                
+                const xPercent = parseInt(bgX.value) / 100;
+                const yPercent = parseInt(bgY.value) / 100;
+                
+                const dx = (canvas.width * xPercent) - (scaledWidth * xPercent);
+                const dy = (canvas.height * yPercent) - (scaledHeight * yPercent);
+
+                ctx.drawImage(bgImage, dx, dy, scaledWidth, scaledHeight);
+            }
+
+            // 2. Constraints & Quote
+            const marginPercent = parseInt(sideMargin.value) / 100;
+            const maxWidth = canvas.width * (1 - (marginPercent * 2)); 
+            const yPercent = parseInt(yOffset.value) / 100;
+            const startY = canvas.height * yPercent;
+            const centerX = canvas.width / 2;
+            
+            const size = parseInt(fontSize.value);
+            ctx.font = `${size}px ${fontFamily.value}`;
+            ctx.fillStyle = fontColor.value;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const lineHeight = size * parseFloat(lineHeightInput.value);
+            
+            wrapText(ctx, quoteText.value, centerX, startY, maxWidth, lineHeight);
+
+            // 3. Signature
+            if (sigText.value.trim() !== "") {
+                const sSize = parseInt(sigFontSize.value);
+                ctx.font = `${sSize}px ${sigFontFamily.value}`;
+                ctx.fillStyle = sigColor.value;
+                const sigXPercent = parseInt(sigXOffset.value) / 100;
+                const sigYPercent = parseInt(sigYOffset.value) / 100;
+                ctx.fillText(sigText.value, canvas.width * sigXPercent, canvas.height * sigYPercent);
+            }
+
+            // 4. Logo
+            if (logoImage.src && logoImage.width > 0) {
+                const logoScalePercent = parseInt(logoSize.value) / 100;
+                const targetWidth = canvas.width * logoScalePercent;
+                const aspectRatio = logoImage.height / logoImage.width;
+                const targetHeight = targetWidth * aspectRatio;
+
+                const logoXPercent = parseInt(logoXOffset.value) / 100;
+                const logoYPercent = parseInt(logoYOffset.value) / 100;
+                const logoXPos = (canvas.width * logoXPercent) - (targetWidth / 2);
+                const logoYPos = (canvas.height * logoYPercent) - (targetHeight / 2);
+                ctx.drawImage(logoImage, logoXPos, logoYPos, targetWidth, targetHeight);
+            }
+
+            // 5. Grid
+            if (showGrid.checked && !isDownloading) {
+                drawGridOverlay(ctx, canvas.width, canvas.height, marginPercent);
+            }
+        }
+
+        function wrapText(context, text, x, y, maxWidth, lineHeight) {
+            if(!text) return;
+            const lines = text.split('\n'); 
+            const wrappedLines = [];
+            for (let i = 0; i < lines.length; i++) {
+                const words = lines[i].split(' ');
+                let line = '';
+                for (let n = 0; n < words.length; n++) {
+                    const testLine = line + words[n] + ' ';
+                    const metrics = context.measureText(testLine);
+                    if (metrics.width > maxWidth && n > 0) {
+                        wrappedLines.push(line.trim());
+                        line = words[n] + ' ';
+                    } else { line = testLine; }
+                }
+                wrappedLines.push(line.trim());
+            }
+            const totalHeight = wrappedLines.length * lineHeight;
+            let currentY = y - (totalHeight / 2) + (lineHeight / 2);
+            for (let j = 0; j < wrappedLines.length; j++) {
+                context.fillText(wrappedLines[j], x, currentY);
+                currentY += lineHeight;
+            }
+        }
+
+        function drawGridOverlay(context, width, height, marginPercent) {
+            context.save();
+            const drawHighContrastLine = (x1, y1, x2, y2, color, dash = []) => {
+                context.beginPath(); context.moveTo(x1, y1); context.lineTo(x2, y2);
+                context.setLineDash(dash); context.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+                context.lineWidth = 3; context.stroke();
+                context.strokeStyle = color; context.lineWidth = 1; context.stroke();
+            };
+            const step = Math.max(20, Math.floor(width / 20)); 
+            for (let x = 0; x < width; x += step) drawHighContrastLine(x, 0, x, height, 'rgba(0, 100, 255, 0.6)');
+            for (let y = 0; y < height; y += step) drawHighContrastLine(0, y, width, y, 'rgba(0, 100, 255, 0.6)');
+            drawHighContrastLine(width / 2, 0, width / 2, height, 'rgba(255, 0, 0, 0.9)', [8, 8]);
+            drawHighContrastLine(0, height / 2, width, height / 2, 'rgba(255, 0, 0, 0.9)', [8, 8]);
+            const marginPx = width * marginPercent;
+            drawHighContrastLine(marginPx, 0, marginPx, height, 'rgba(0, 180, 0, 0.9)', [12, 6]);
+            drawHighContrastLine(width - marginPx, 0, width - marginPx, height, 'rgba(0, 180, 0, 0.9)', [12, 6]);
+            context.restore();
+        }
+
+        downloadBtn.addEventListener('click', function() {
+            drawCanvas(true); 
+            const link = document.createElement('a');
+            link.download = 'quote-image.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            drawCanvas(false); 
+        });
+    </script>
+</body>
+</html>
